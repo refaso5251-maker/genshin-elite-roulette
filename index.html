@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>原神・精鋭狩りルーレット</title>
+<style>
+:root{
+  --bg:#0d1018; --panel:#171b26; --panel2:#202635; --text:#f4f6fb;
+  --muted:#9da6b8; --accent:#d8b56a; --line:#303849;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at top,#242b3b 0,#0d1018 48%);color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI","Noto Sans JP",sans-serif;min-height:100vh}
+.wrap{width:min(760px,100%);margin:auto;padding:18px 14px 40px}
+h1{font-size:25px;margin:6px 0 4px;text-align:center}
+.sub{text-align:center;color:var(--muted);font-size:13px;margin-bottom:18px}
+.panel{background:rgba(23,27,38,.94);border:1px solid var(--line);border-radius:20px;padding:18px;margin:12px 0;box-shadow:0 10px 35px #0005}
+.step{font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.08em}
+h2{font-size:20px;margin:5px 0 14px}
+.wheel{height:170px;border-radius:18px;background:linear-gradient(180deg,#111520,#1d2330);
+  border:1px solid #3a4355;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.pointer{position:absolute;top:7px;left:50%;transform:translateX(-50%);font-size:18px;color:var(--accent);z-index:2}
+.result{font-size:28px;font-weight:800;text-align:center}
+.result small{display:block;font-size:13px;color:var(--muted);font-weight:500;margin-top:5px}
+.icon{width:72px;height:72px;border-radius:20px;display:grid;place-items:center;font-size:38px;margin:0 auto 8px;
+  background:linear-gradient(145deg,#30384b,#171b25);border:1px solid #566078}
+button{width:100%;border:1px solid #dfe3ea;border-radius:14px;padding:14px 16px;margin-top:12px;font-size:16px;font-weight:800;
+  color:#151922;background:#ffffff;cursor:pointer;box-shadow:0 3px 10px #0003}
+button:disabled{opacity:.45;cursor:not-allowed}
+button{-webkit-appearance:none;appearance:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:active{transform:scale(.985)}
+.secondary{background:#2b3343;color:var(--text)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+.card{background:#111621;border:1px solid var(--line);border-radius:15px;padding:11px;text-align:center;min-height:105px}
+.card .mini{font-size:30px}.card b{display:block;margin-top:5px}.card span{font-size:11px;color:var(--muted)}
+.final{display:none}.final.show{display:block}
+.party{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.party .card{min-height:135px}
+.charImg{width:72px;height:72px;object-fit:cover;border-radius:18px;display:block;margin:0 auto 8px;background:#30384b}
+.card img{width:58px;height:58px;object-fit:cover;border-radius:15px;display:block;margin:0 auto 5px;background:#30384b}
+.filterBox{background:#111621;border:1px solid var(--line);border-radius:15px;padding:12px;margin-bottom:12px}
+.filterTitle{font-size:13px;font-weight:800;margin-bottom:9px}
+.filters{display:flex;gap:7px;flex-wrap:wrap}
+.filters label{flex:1;min-width:92px;text-align:center;background:#252d3c;border-radius:10px;padding:10px 6px;font-size:13px;cursor:pointer}
+.filters input{accent-color:#d8b56a}
+.filterNote{font-size:11px;color:var(--muted);margin-top:8px;text-align:center}
+.status{text-align:center;color:var(--muted);font-size:13px;margin-top:10px;min-height:19px}
+@media(min-width:600px){.grid,.party{grid-template-columns:repeat(4,1fr)}}
+
+/* GitHub Pages 正式Web版：PC / スマホ自動対応 */
+html{-webkit-text-size-adjust:100%}
+body{overscroll-behavior-y:none}
+@media (min-width:900px){
+  .wrap{width:min(1080px,96%);padding:28px 18px 54px}
+  h1{font-size:32px}
+  .panel{padding:24px}
+  .wheel{height:210px}
+  .result{font-size:34px}
+  .grid,.party{grid-template-columns:repeat(4,1fr)}
+  .card{min-height:125px}
+  .party .card{min-height:175px}
+  button{max-width:680px;display:block;margin-left:auto;margin-right:auto}
+  #charButtons button{max-width:none}
+}
+@media (max-width:599px){
+  .wrap{width:100%;padding:10px 10px 30px}
+  h1{font-size:21px;margin-top:8px}
+  .sub{font-size:11px;line-height:1.5}
+  .panel{padding:14px;border-radius:17px;margin:9px 0}
+  h2{font-size:17px}
+  .wheel{height:150px}
+  .result{font-size:24px}
+  .icon{width:62px;height:62px;font-size:32px}
+  .grid,.party{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .card{padding:9px;min-height:96px}
+  .party .card{min-height:150px}
+  button{min-height:48px;font-size:16px;padding:13px 12px}
+  .filters{display:grid;grid-template-columns:1fr;gap:6px}
+  .filters label{min-width:0;padding:11px 7px}
+  .charImg{width:68px;height:68px}
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎰 原神・精鋭狩りルーレット</h1>
+  <div class="sub">元素 → キャラクターの二段階抽選 / 元素重複OK・キャラクター重複なし</div>
+
+  <section class="panel">
+    <div class="step">STEP 1</div>
+    <h2>7元素から4元素を抽選</h2>
+    <div class="wheel">
+      <div class="pointer">▼</div>
+      <div class="result" id="elementResult"><div class="icon">🎲</div>元素を回そう！</div>
+    </div>
+    <button type="button" id="elementBtn" onclick="spinElement()">元素を抽選する</button>
+    <div class="status" id="elementStatus"></div>
+    <div class="grid" id="elementCards"></div>
+  </section>
+
+  <section class="panel" id="charPanel" style="display:none">
+    <div class="step">STEP 2</div>
+    <h2>各元素からキャラクターを1人抽選</h2>
+    <div class="filterBox">
+      <div class="filterTitle">キャラクターのレアリティ</div>
+      <div class="filters">
+        <label><input type="radio" name="rarity" value="all" checked onchange="setRarity(this.value)"> ★4・★5</label>
+        <label><input type="radio" name="rarity" value="5" onchange="setRarity(this.value)"> ★5のみ</label>
+        <label><input type="radio" name="rarity" value="4" onchange="setRarity(this.value)"> ★4のみ</label>
+      </div>
+      <div class="filterNote">※ 主人公（空・蛍）と元素未固定のドールは抽選対象外です<br>全120キャラ：★5 69人 / ★4 51人</div>
+    </div>
+    <div class="status" id="charStatus">抽選する元素を選択してください。</div>
+    <div class="grid" id="charButtons"></div>
+  </section>
+
+  <section class="panel final" id="finalPanel">
+    <div class="step">RESULT</div>
+    <h2>🎉 今回のパーティー</h2>
+    <div class="party" id="party"></div>
+    <button type="button" class="secondary" onclick="resetAll()">最初からやり直す</button>
+  </section>
+</div>
+
+<script>
+const elements = {"炎":{"emoji":"🔥","chars":[{"name":"ニコ","en":"Nicole","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Nicole_icon.png"},{"name":"ドゥリン","en":"Durin","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Durin_icon.png"},{"name":"ディルック","en":"Diluc","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Diluc_icon.png"},{"name":"クレー","en":"Klee","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Klee_icon.png"},{"name":"胡桃","en":"Hu Tao","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Hu%20Tao_icon.png"},{"name":"ディシア","en":"Dehya","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Dehya_icon.png"},{"name":"リネ","en":"Lyney","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Lyney_icon.png"},{"name":"マーヴィカ","en":"Mavuika","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Mavuika_icon.png"},{"name":"宵宮","en":"Yoimiya","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Yoimiya_icon.png"},{"name":"アルレッキーノ","en":"Arlecchino","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Arlecchino_icon.png"},{"name":"ベネット","en":"Bennett","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Bennett_icon.png"},{"name":"アンバー","en":"Amber","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Amber_icon.png"},{"name":"辛炎","en":"Xinyan","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Xinyan_icon.png"},{"name":"嘉明","en":"Gaming","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Gaming_icon.png"},{"name":"煙緋","en":"Yanfei","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Yanfei_icon.png"},{"name":"香菱","en":"Xiangling","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Xiangling_icon.png"},{"name":"トーマ","en":"Thoma","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Thoma_icon.png"},{"name":"シュヴルーズ","en":"Chevreuse","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Chevreuse_icon.png"}]},"水":{"emoji":"💧","chars":[{"name":"モナ","en":"Mona","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Mona_icon.png"},{"name":"夜蘭","en":"Yelan","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Yelan_icon.png"},{"name":"神里綾人","en":"Kamisato Ayato","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Kamisato%20Ayato_icon.png"},{"name":"珊瑚宮心海","en":"Sangonomiya Kokomi","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Sangonomiya%20Kokomi_icon.png"},{"name":"ニィロウ","en":"Nilou","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Nilou_icon.png"},{"name":"フリーナ","en":"Furina","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Furina_icon.png"},{"name":"ヌヴィレット","en":"Neuvillette","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Neuvillette_icon.png"},{"name":"シグウィン","en":"Sigewinne","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Sigewinne_icon.png"},{"name":"ムアラニ","en":"Mualani","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Mualani_icon.png"},{"name":"コロンビーナ","en":"Columbina","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Columbina_icon.png"},{"name":"ヴォジャニーツァ","en":"Vojanitsa","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Vojanitsa_icon.png"},{"name":"タルタリヤ","en":"Tartaglia","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Tartaglia_icon.png"},{"name":"バーバラ","en":"Barbara","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Barbara_icon.png"},{"name":"行秋","en":"Xingqiu","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Xingqiu_icon.png"},{"name":"キャンディス","en":"Candace","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Candace_icon.png"},{"name":"ダリア","en":"Dahlia","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Dahlia_icon.png"},{"name":"アイノ","en":"Aino","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Aino_icon.png"}]},"風":{"emoji":"🌪️","chars":[{"name":"ジン","en":"Jean","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Jean_icon.png"},{"name":"ウェンティ","en":"Venti","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Venti_icon.png"},{"name":"楓原万葉","en":"Kaedehara Kazuha","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Kaedehara%20Kazuha_icon.png"},{"name":"ショウ","en":"Xiao","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Xiao_icon.png"},{"name":"放浪者","en":"Wanderer","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Wanderer_icon.png"},{"name":"閑雲","en":"Xianyun","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Xianyun_icon.png"},{"name":"夢見月瑞希","en":"Yumemizuki Mizuki","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Yumemizuki%20Mizuki_icon.png"},{"name":"チャスカ","en":"Chasca","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Chasca_icon.png"},{"name":"ファルカ","en":"Varka","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Varka_icon.png"},{"name":"藍硯","en":"Lan Yan","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Lan%20Yan_icon.png"},{"name":"ヴェスナ","en":"Vesna","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Vesna_icon.png"},{"name":"スクロース","en":"Sucrose","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Sucrose_icon.png"},{"name":"早柚","en":"Sayu","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Sayu_icon.png"},{"name":"鹿野院平蔵","en":"Shikanoin Heizou","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Shikanoin%20Heizou_icon.png"},{"name":"ファルザン","en":"Faruzan","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Faruzan_icon.png"},{"name":"リネット","en":"Lynette","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Lynette_icon.png"},{"name":"イファ","en":"Ifa","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Ifa_icon.png"},{"name":"ヤフォダ","en":"Jahoda","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Jahoda_icon.png"},{"name":"プルーネ","en":"Prune","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Prune_icon.png"}]},"雷":{"emoji":"⚡","chars":[{"name":"刻晴","en":"Keqing","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Keqing_icon.png"},{"name":"雷電将軍","en":"Raiden Shogun","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Raiden%20Shogun_icon.png"},{"name":"八重神子","en":"Yae Miko","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Yae%20Miko_icon.png"},{"name":"セノ","en":"Cyno","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Cyno_icon.png"},{"name":"クロリンデ","en":"Clorinde","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Clorinde_icon.png"},{"name":"ヴァレサ","en":"Varesa","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Varesa_icon.png"},{"name":"イネファ","en":"Ineffa","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Ineffa_icon.png"},{"name":"フリンズ","en":"Flins","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Flins_icon.png"},{"name":"レザー","en":"Razor","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Razor_icon.png"},{"name":"フィッシュル","en":"Fischl","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Fischl_icon.png"},{"name":"北斗","en":"Beidou","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Beidou_icon.png"},{"name":"リサ","en":"Lisa","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Lisa_icon.png"},{"name":"久岐忍","en":"Kuki Shinobu","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Kuki%20Shinobu_icon.png"},{"name":"九条裟羅","en":"Kujou Sara","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Kujou%20Sara_icon.png"},{"name":"ドリー","en":"Dori","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Dori_icon.png"},{"name":"セトス","en":"Sethos","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Sethos_icon.png"},{"name":"イアンサ","en":"Iansan","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Iansan_icon.png"},{"name":"オロルン","en":"Ororon","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Ororon_icon.png"},{"name":"アリョーシャ","en":"Alyosha","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Alyosha_icon.png"}]},"草":{"emoji":"🌿","chars":[{"name":"白朮","en":"Baizhu","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Baizhu_icon.png"},{"name":"アルハイゼン","en":"Alhaitham","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Alhaitham_icon.png"},{"name":"ナヒーダ","en":"Nahida","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Nahida_icon.png"},{"name":"ティナリ","en":"Tighnari","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Tighnari_icon.png"},{"name":"エミリエ","en":"Emilie","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Emilie_icon.png"},{"name":"キィニチ","en":"Kinich","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Kinich_icon.png"},{"name":"ラウマ","en":"Lauma","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Lauma_icon.png"},{"name":"ネフェル","en":"Nefer","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Nefer_icon.png"},{"name":"コレイ","en":"Collei","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Collei_icon.png"},{"name":"ヨォーヨ","en":"Yaoyao","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Yaoyao_icon.png"},{"name":"カーヴェ","en":"Kaveh","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Kaveh_icon.png"},{"name":"綺良々","en":"Kirara","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Kirara_icon.png"}]},"氷":{"emoji":"❄️","chars":[{"name":"アーロイ","en":"Aloy","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Aloy_icon.png"},{"name":"七七","en":"Qiqi","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Qiqi_icon.png"},{"name":"甘雨","en":"Ganyu","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Ganyu_icon.png"},{"name":"神里綾華","en":"Kamisato Ayaka","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Kamisato%20Ayaka_icon.png"},{"name":"エウルア","en":"Eula","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Eula_icon.png"},{"name":"申鶴","en":"Shenhe","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Shenhe_icon.png"},{"name":"リオセスリ","en":"Wriothesley","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Wriothesley_icon.png"},{"name":"エスコフィエ","en":"Escoffier","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Escoffier_icon.png"},{"name":"シトラリ","en":"Citlali","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Citlali_icon.png"},{"name":"スカーク","en":"Skirk","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Skirk_icon.png"},{"name":"ローエン","en":"Lohen","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Lohen_icon.png"},{"name":"オデット","en":"Odette","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Odette_icon.png"},{"name":"サンドローネ","en":"Sandrone","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Sandrone_icon.png"},{"name":"ガイア","en":"Kaeya","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Kaeya_icon.png"},{"name":"ロサリア","en":"Rosaria","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Rosaria_icon.png"},{"name":"ミカ","en":"Mika","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Mika_icon.png"},{"name":"ディオナ","en":"Diona","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Diona_icon.png"},{"name":"重雲","en":"Chongyun","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Chongyun_icon.png"},{"name":"レイラ","en":"Layla","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Layla_icon.png"},{"name":"フレミネ","en":"Freminet","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Freminet_icon.png"},{"name":"シャルロット","en":"Charlotte","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Charlotte_icon.png"}]},"岩":{"emoji":"🪨","chars":[{"name":"アルベド","en":"Albedo","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Albedo_icon.png"},{"name":"シハク","en":"Zibai","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Zibai_icon.png"},{"name":"鍾離","en":"Zhongli","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Zhongli_icon.png"},{"name":"荒瀧一斗","en":"Arataki Itto","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Arataki%20Itto_icon.png"},{"name":"千織","en":"Chiori","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Chiori_icon.png"},{"name":"ナヴィア","en":"Navia","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Navia_icon.png"},{"name":"シロネン","en":"Xilonen","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Xilonen_icon.png"},{"name":"リンネア","en":"Linnea","rarity":5,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Linnea_icon.png"},{"name":"ノエル","en":"Noelle","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Noelle_icon.png"},{"name":"雲菫","en":"Yun Jin","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Yun%20Jin_icon.png"},{"name":"凝光","en":"Ningguang","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Ningguang_icon.png"},{"name":"ゴロー","en":"Gorou","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Gorou_icon.png"},{"name":"カチーナ","en":"Kachina","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Kachina_icon.png"},{"name":"イルーガ","en":"Illuga","rarity":4,"image":"https://bbs.hoyolab.com/hoyowiki/picture/character/Illuga_icon.png"}]}};
+
+let chosenElements=[], chosenChars=[], charDone=false;
+
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const rand = arr => arr[Math.floor(Math.random()*arr.length)];
+let rarityFilter = "all";
+const elementColors = {
+  "炎":"#ff6259",
+  "水":"#55b8ff",
+  "風":"#63e6c3",
+  "雷":"#c68cff",
+  "草":"#7ed957",
+  "氷":"#9eeaff",
+  "岩":"#e2b85b"
+};
+function setRarity(value){
+  rarityFilter = value;
+  // If a character has not been drawn yet, buttons remain available with the new filter.
+  showCharPanel();
+  document.getElementById("charStatus").textContent =
+    value==="all" ? "★4・★5から抽選します。" : `★${value}キャラのみから抽選します。`;
+}
+
+async function spinElement(){
+  const btn=document.getElementById("elementBtn");
+  if(chosenElements.length>=4) return;
+  btn.disabled=true;
+  const available=Object.keys(elements);
+  const result=document.getElementById("elementResult");
+  for(let i=0;i<14;i++){
+    const e=rand(available);
+    result.innerHTML=`<div class="icon">${elements[e].emoji}</div><span style="color:${elementColors[e]}">${e}</span>`;
+    await sleep(55+i*12);
+  }
+  const e=rand(available);
+  chosenElements.push(e);
+  chosenChars.push(null);
+  result.innerHTML=`<div class="icon">${elements[e].emoji}</div><span style="color:${elementColors[e]}">${e}</span><small>${chosenElements.length}/4 個目</small>`;
+  renderElements();
+  document.getElementById("elementStatus").textContent =
+    chosenElements.length<4 ? "もう一度、元素を抽選しよう！" : "4元素が決定！下で各元素のキャラを抽選できます。";
+  if(chosenElements.length<4) btn.disabled=false;
+  else {
+    btn.textContent="4元素決定！";
+    showCharPanel();
+  }
+}
+
+function renderElements(){
+  document.getElementById("elementCards").innerHTML=chosenElements.map((e,i)=>`
+    <div class="card"><div class="mini">${elements[e].emoji}</div><b style="color:${elementColors[e]}">${i+1}. ${e}</b>
+    <span>${chosenChars[i] ? `✓ <strong style="color:${elementColors[e]}">${chosenChars[i]}</strong>` : "キャラ未抽選"}</span></div>`).join("");
+}
+
+function showCharPanel(){
+  document.getElementById("charPanel").style.display="block";
+  document.getElementById("charButtons").innerHTML=chosenElements.map((e,i)=>`
+    <button type="button" onclick="spinChar(${i})" id="btn-char-${i}" ${chosenChars[i] ? "disabled" : ""}>
+      ${elements[e].emoji} ${i+1}枠目：<span style="color:${elementColors[e]}">${e}</span>${chosenChars[i] ? " ✓" : ""}
+    </button>`).join("");
+}
+
+async function spinChar(slot){
+  const e=chosenElements[slot];
+  const btn=document.getElementById("btn-char-"+slot);
+  if(!e || chosenChars[slot]) return;
+  btn.disabled=true;
+  const result=document.getElementById("charStatus");
+  const usedCharacters = chosenChars.filter(Boolean);
+  const pool=elements[e].chars.filter(x =>
+    (rarityFilter==="all" || x.rarity===Number(rarityFilter)) &&
+    !usedCharacters.includes(x.name)
+  );
+  if(!pool.length){
+    result.innerHTML=`${elements[e].emoji} <span style="color:${elementColors[e]}">${e}</span>：条件に合う未選出キャラクターがいません`;
+    btn.disabled=false;
+    return;
+  }
+  for(let i=0;i<16;i++){
+    const x=rand(pool);
+    result.innerHTML=`<img class="charImg" src="${x.image}" alt="" loading="lazy">${elements[e].emoji} <span style="color:${elementColors[e]};font-weight:800">${e}</span>：<span style="color:${elementColors[e]};font-weight:800">${x.name}</span> ★${x.rarity} …`;
+    await sleep(45+i*10);
+  }
+  const c=rand(pool);
+  chosenChars[slot]=c.name;
+  result.innerHTML=`<img class="charImg" src="${c.image}" alt="${c.name}" loading="lazy">${elements[e].emoji} <span style="color:${elementColors[e]};font-weight:800">${e}</span> → <span style="color:${elementColors[e]};font-weight:800">${c.name}</span> ★${c.rarity}！`;
+  btn.innerHTML=`✓ ${slot+1}枠目：<span style="color:${elementColors[e]}">${e}</span>／<span style="color:${elementColors[e]}">${c.name}</span> ★${c.rarity}`;
+  renderElements();
+  if(chosenChars.filter(Boolean).length===4) showFinal();
+}
+
+async function rerollPartyMember(slot){
+  const e=chosenElements[slot];
+  const currentName=chosenChars[slot];
+  if(!e || !currentName) return;
+
+  // 他の3枠ですでに選ばれているキャラは候補から除外。
+  // 現在のキャラ自身も除外し、必ず別キャラへ再抽選する。
+  const usedByOthers=chosenChars.filter((name,i)=>i!==slot && name);
+  const pool=elements[e].chars.filter(x =>
+    (rarityFilter==="all" || x.rarity===Number(rarityFilter)) &&
+    !usedByOthers.includes(x.name) &&
+    x.name!==currentName
+  );
+
+  if(!pool.length){
+    alert("この条件では再抽選できる別キャラクターがいません。");
+    return;
+  }
+
+  const c=rand(pool);
+  chosenChars[slot]=c.name;
+
+  // STEP1/STEP2側の表示も同期してから最終パーティーを更新。
+  renderElements();
+  showCharPanel();
+  document.getElementById("charStatus").innerHTML=
+    `🎲 再抽選：${elements[e].emoji} <span style="color:${elementColors[e]};font-weight:800">${e}</span> → <span style="color:${elementColors[e]};font-weight:800">${c.name}</span> ★${c.rarity}！`;
+  showFinal();
+}
+
+function showFinal(){
+  const panel=document.getElementById("finalPanel");
+  panel.classList.add("show");
+  document.getElementById("party").innerHTML=chosenElements.map((e,i)=>{
+    const char=elements[e].chars.find(function(x){ return x.name===chosenChars[i]; });
+    const imageUrl=char ? char.image : "";
+    const rarity=char ? char.rarity : "-";
+    return `<div class="card">
+      <img src="${imageUrl}" alt="${chosenChars[i]||""}" loading="lazy">
+      <b style="color:${elementColors[e]}">${chosenChars[i]||"-"}</b>
+      <span>${elements[e].emoji} <strong style="color:${elementColors[e]}">${e}元素</strong> / ★${rarity}</span>
+      <button type="button" class="secondary" style="margin-top:9px;padding:9px 8px;font-size:12px" onclick="rerollPartyMember(${i})">🎲 このキャラを再抽選</button>
+    </div>`;
+  }).join("");
+  setTimeout(()=>panel.scrollIntoView({behavior:"smooth",block:"center"}),150);
+}
+
+function resetAll(){
+  chosenElements=[]; chosenChars=[];
+  document.getElementById("elementBtn").disabled=false;
+  document.getElementById("elementBtn").textContent="元素を抽選する";
+  document.getElementById("elementResult").innerHTML='<div class="icon">🎲</div>元素を回そう！';
+  document.getElementById("elementStatus").textContent="";
+  document.getElementById("elementCards").innerHTML="";
+  document.getElementById("charPanel").style.display="none";
+  document.getElementById("finalPanel").classList.remove("show");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+// iPhone Safari / WebKit向けの軽量タップ補助
+document.addEventListener("touchend", function(ev){
+  var b = ev.target.closest ? ev.target.closest("button") : null;
+  if (!b || b.disabled || b.getAttribute("onclick")) return;
+  b.click();
+}, {passive:true});
+
+function installImageFallbacks(){
+  var imgs=document.querySelectorAll("img");
+  for(var i=0;i<imgs.length;i++){
+    var img=imgs[i];
+    if(img.getAttribute("data-fallback-ready")) continue;
+    img.setAttribute("data-fallback-ready","1");
+    img.addEventListener("error",function(){ this.style.display="none"; });
+  }
+}
+document.addEventListener("DOMContentLoaded",installImageFallbacks);
+
+</script>
+</body>
+</html>
